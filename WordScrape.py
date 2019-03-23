@@ -6,7 +6,6 @@ from bs4 import Comment
 from urllib.parse import urlparse
 from urllib.request import urlopen, URLError
 
-#Fab ha il cazzetto
 def visit(url):
 
     if validateUrl(url):
