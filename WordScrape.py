@@ -1,10 +1,11 @@
 import bs4
 import requests
 import re
-import pandas as pd
+import collections
 from bs4 import Comment
 from urllib.parse import urlparse
 from urllib.request import urlopen, URLError
+
 
 def visit(url):
 
@@ -12,6 +13,8 @@ def visit(url):
         print("Visiting " + url)
 
         visited.add(url)
+        totalWords.extend(scrapeWords(url))
+
         linkSet = collectLinks(url)
 
         for link in linkSet:
@@ -28,18 +31,14 @@ def scrapeWords(url):
     for script in soup(["script", "style"]):
         script.extract()
 
-    htmlStringified = ""
-
     for element in soup.body.find_all(text=True):
 
         if isinstance(element, Comment):
             element.extract()
 
-        htmlStringified += element + " "
+    cleanedText = re.sub('[^a-zA-Z0-9 ]+', ' ', soup.text.lower())
 
-    cleanedText = re.sub('[^a-zA-Z0-9 ]+', ' ', htmlStringified.lower())
-
-    wordList = pd.DataFrame({'a': cleanedText.split()})
+    wordList = cleanedText.split()
 
     return wordList
 
@@ -95,8 +94,17 @@ def validateUrl(url):
 
 visited = set()
 
+totalWords = list()
+
+wordsDict = {}
+
 url = input("Enter the website you want to WordScrape: ")
 
 visit(url)
 
 print(visited)
+
+for element in totalWords:
+    wordsDict[element] = totalWords.count(element)
+    
+print(sorted(wordsDict.items(), key=lambda kv: kv[1], reverse = True))
