@@ -93,7 +93,9 @@ def validateUrl(url):
         urlopen(url)
         return True
 
-    except URLError:
+    except URLError as error:
+        print("Invalid URL: " + url)
+        print(error)
         return False
 
 
