@@ -68,7 +68,7 @@ def collectLinks(url):
                         addedDomain = domain + linkStr
                         linkSet.add(addedDomain)
 
-                    elif (linkStr[0:4] != "http" or linkStr[0:3] != "www"):
+                    elif (linkStr[0:4] != "http" and linkStr[0:3] != "www"):
                         addedDomain = domain + "/" + linkStr
                         linkSet.add(addedDomain)
 
