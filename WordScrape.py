@@ -2,7 +2,6 @@ import bs4
 import requests
 import re
 import collections
-import string
 from bs4 import Comment
 from urllib.parse import urlparse
 from urllib.request import urlopen, URLError
@@ -25,9 +24,9 @@ def visit(url):
 
 
 def scrapeWords(url):
-    html = urlopen(url).read()
+    r = requests.get(url)
 
-    soup = bs4.BeautifulSoup(html, "html.parser")
+    soup = bs4.BeautifulSoup(r.text, "html.parser")
 
     for script in soup(["script", "style"]):
         script.extract()
@@ -37,15 +36,11 @@ def scrapeWords(url):
         if isinstance(element, Comment):
             element.extract()
 
-    wordList = soup.text.split()
+    cleanedText = re.sub('[^a-zA-Z0-9 ]+', ' ', soup.text.lower())
 
-    cleanedText = list()
+    wordList = cleanedText.split()
 
-    for word in wordList:
-        cleanedText.append(word.lower().translate(
-            str.maketrans('', '', string.punctuation)))
-
-    return cleanedText
+    return wordList
 
 
 def collectLinks(url):
@@ -68,7 +63,7 @@ def collectLinks(url):
                         addedDomain = domain + linkStr
                         linkSet.add(addedDomain)
 
-                    elif (linkStr[0:4] != "http" and linkStr[0:3] != "www"):
+                    elif (linkStr[0:4] != "http" or linkStr[0:3] != "www"):
                         addedDomain = domain + "/" + linkStr
                         linkSet.add(addedDomain)
 
@@ -93,25 +88,8 @@ def validateUrl(url):
         urlopen(url)
         return True
 
-    except URLError as error:
-        print("Invalid URL: " + url)
-        print(error)
+    except URLError:
         return False
-
-
-def tag_visible(element):
-    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
-        return False
-    if isinstance(element, Comment):
-        return False
-    return True
-
-
-def text_from_html(body):
-    soup = bs4.BeautifulSoup(body, 'html.parser')
-    texts = soup.findAll(text=True)
-    visible_texts = filter(tag_visible, texts)
-    return u" ".join(t.strip() for t in visible_texts)
 
 
 visited = set()
@@ -128,5 +106,5 @@ print(visited)
 
 for element in totalWords:
     wordsDict[element] = totalWords.count(element)
-
-print(sorted(wordsDict.items(), key=lambda kv: kv[1], reverse=True))
+    
+print(sorted(wordsDict.items(), key=lambda kv: kv[1], reverse = True))
